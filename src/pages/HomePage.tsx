@@ -1,18 +1,14 @@
-import { useState } from "react";
-import { Link } from "wouter";
+import { ServerView } from "../views/ServerView";
+import { NameView } from "../views/NameView";
 
 export function HomePage() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <main>
-      <h1>Home</h1>
-      <div>
-        <button onClick={() => setCount((count) => count + 1)}>
-          Count is {count}
-        </button>
-      </div>
-      <Link href="/about">About</Link>
-    </main>
-  );
+	return (
+		<main>
+			<h1>Home</h1>
+			<div style={{ display: "flex", gap: "1rem" }}>
+				<NameView />
+				<ServerView />
+			</div>
+		</main>
+	);
 }

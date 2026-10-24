@@ -10,9 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "nanoid": "^6.0.2",
+    "nanoid-dictionary": "^5.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "wouter": "^3.13.0"
+    "wouter": "^3.13.0",
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
