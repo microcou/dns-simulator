@@ -14,8 +14,10 @@ interface ServerStore {
 	deleteServer: (id: string) => void;
 }
 
+const initialNames = ["lorem", "ipsum", "dolor"].map((name) => ({ id: generateId(32), name }));
+
 export const useNameStore = create<NameStore>((set) => ({
-	names: [],
+	names: initialNames,
 	addName: (name) =>
 		set((state) => ({
 			names: state.names.concat({ id: generateId(32), name }),

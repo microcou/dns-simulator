@@ -21,7 +21,7 @@ export function NameView() {
 	};
 
 	return (
-		<div id="treeWrapper" style={{ width: "50em", height: "40em", border: "1px solid black" }}>
+		<div id="treeWrapper" style={{ height: "40em", border: "1px solid black" }}>
 			<Tree
 				data={domainNameTree}
 				onNodeClick={(node) => {
