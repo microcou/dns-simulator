@@ -2,7 +2,7 @@ import { useNameStore, useServerStore } from "../store";
 
 export function ServerView() {
 	return (
-		<div>
+		<div style={{ border: "1px solid black", padding: "1em" }}>
 			<h1>Server View</h1>
 			<NameEditor />
 			<ServerEditor />
