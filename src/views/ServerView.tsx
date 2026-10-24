@@ -89,6 +89,10 @@ function ServerEditor() {
 					if (name && ip) {
 						addServer({ name, ip });
 						form.reset();
+						const nameInput = form.elements.namedItem("name");
+						if (nameInput instanceof HTMLInputElement) {
+							nameInput.focus();
+						}
 					}
 				}}
 			>
