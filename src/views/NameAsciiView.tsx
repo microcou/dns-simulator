@@ -2,7 +2,11 @@ import { createContext, useContext, useState } from "react";
 import { useNameStore } from "../store";
 import { generateId, unsafeHash } from "../utils";
 
-const NameAsciiContext = createContext({ showRecords: true, showFullName: true, colorSeed: "" });
+const NameAsciiContext = createContext({
+	showRecords: true,
+	showFullName: true,
+	colorSeed: generateId(8),
+});
 
 const domainNameTree = {
 	name: ".",
@@ -70,11 +74,18 @@ type DomainNameNode = {
 };
 
 function sortChildren(children: DomainNameNode[]) {
-	return [...children].sort(
-		(a, b) =>
-			Number(Boolean(a.isZoneStart)) - Number(Boolean(b.isZoneStart)) ||
-			a.name.localeCompare(b.name),
-	);
+	return [...children].sort(function (a, b) {
+		if (a.isZoneStart && !b.isZoneStart) return 1;
+		if (!a.isZoneStart && b.isZoneStart) return -1;
+
+		// const aNumChildren = a.children ? a.children.length : 0;
+		// const bNumChildren = b.children ? b.children.length : 0;
+
+		// if (aNumChildren && !bNumChildren) return 1;
+		// if (!aNumChildren && bNumChildren) return -1;
+
+		return a.name.localeCompare(b.name);
+	});
 }
 
 function addChildren(
@@ -175,7 +186,7 @@ function DomainNameNode({
 			style={{
 				backgroundColor: color,
 				border: node.isZoneStart ? "1px solid black" : "none",
-				margin: node.isZoneStart ? "-1px" : "0	 ",
+				margin: node.isZoneStart ? "-1px" : "0",
 				paddingLeft: 20,
 			}}
 		>
