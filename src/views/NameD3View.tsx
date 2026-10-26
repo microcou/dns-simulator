@@ -1,7 +1,7 @@
 import { useNameStore } from "../store";
 import Tree from "react-d3-tree";
 
-export function NameView() {
+export function NameD3View() {
 	const names = useNameStore((state) => state.names);
 	const deleteName = useNameStore((state) => state.deleteName);
 
