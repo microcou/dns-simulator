@@ -75,8 +75,8 @@ type DomainNameNode = {
 
 function sortChildren(children: DomainNameNode[]) {
 	return [...children].sort(function (a, b) {
-		if (a.isZoneStart && !b.isZoneStart) return 1;
-		if (!a.isZoneStart && b.isZoneStart) return -1;
+		// if (a.isZoneStart && !b.isZoneStart) return 1;
+		// if (!a.isZoneStart && b.isZoneStart) return -1;
 
 		// const aNumChildren = a.children ? a.children.length : 0;
 		// const bNumChildren = b.children ? b.children.length : 0;
@@ -126,7 +126,7 @@ export function NameAsciiView() {
 							checked={showRecords}
 							onChange={(e) => setShowRecords(e.target.checked)}
 						/>{" "}
-						Show records
+						Show RR
 					</label>
 					<label>
 						<input
@@ -186,7 +186,7 @@ function DomainNameNode({
 			style={{
 				backgroundColor: color,
 				border: node.isZoneStart ? "1px solid black" : "none",
-				margin: node.isZoneStart ? "-1px" : "0",
+				margin: node.isZoneStart ? `-1px -1px 0 -1px` : "0",
 				paddingLeft: 20,
 			}}
 		>
