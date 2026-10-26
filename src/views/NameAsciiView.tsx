@@ -1,4 +1,8 @@
-import { unsafeHash } from "../utils";
+import { createContext, useContext, useState } from "react";
+import { useNameStore } from "../store";
+import { generateId, unsafeHash } from "../utils";
+
+const NameAsciiContext = createContext({ showRecords: true, colorSeed: "" });
 
 const domainNameTree = {
 	name: ". (root)",
@@ -54,6 +58,7 @@ const domainNameTree = {
 				},
 			],
 		},
+		{ name: "net", isZoneStart: true },
 	],
 };
 
@@ -72,20 +77,67 @@ function sortChildren(children: DomainNameNode[]) {
 	);
 }
 
+function addChildren(
+	node: DomainNameNode,
+	targetName: string,
+	newChildren: DomainNameNode[],
+): DomainNameNode {
+	if (node.name === targetName) {
+		return { ...node, children: [...(node.children ?? []), ...newChildren] };
+	}
+	return node.children
+		? { ...node, children: node.children.map((c) => addChildren(c, targetName, newChildren)) }
+		: node;
+}
+
 export function NameAsciiView() {
+	const names = useNameStore((state) => state.names);
+
+	const [showRecords, setShowRecords] = useState(true);
+	const [colorSeed, setColorSeed] = useState(() => generateId(8));
+
 	let level = 0;
+
+	const tree = addChildren(
+		domainNameTree,
+		"net",
+		names.map((name) => ({ name: name.name, isZoneStart: false })),
+	);
+
 	return (
-		<div aria-label="Domain name tree" style={{ border: "1px solid black" }}>
-			<Para level={level} node={domainNameTree} parentZone="" />
-		</div>
+		<NameAsciiContext.Provider value={{ showRecords, colorSeed }}>
+			<div>
+				<div style={{ display: "flex", gap: "1em", alignItems: "center", marginBottom: "0.5em" }}>
+					<label>
+						<input
+							type="checkbox"
+							checked={showRecords}
+							onChange={(e) => setShowRecords(e.target.checked)}
+						/>{" "}
+						Show records
+					</label>
+					<button type="button" onClick={() => setColorSeed(generateId(8))}>
+						Change colors
+					</button>
+				</div>
+				<div aria-label="Domain name tree" style={{ border: "1px solid black" }}>
+					<DomainNameNode level={level} node={tree} parentZone="" />
+				</div>
+			</div>
+		</NameAsciiContext.Provider>
 	);
 }
 
-function stringToColor(str: string) {
-	return `hsl(${unsafeHash(str) % 360}, 60%, 80%)`;
+function domainNameToColor(str: string) {
+	while (str.length < 10) str += str;
+	const hash = unsafeHash(str);
+	const hue = hash % 360;
+	const saturation = 50 + (hash % 20);
+	const lightness = 50 + (hash % 30);
+	return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
-function Para({
+function DomainNameNode({
 	node,
 	level,
 	parentZone,
@@ -96,26 +148,41 @@ function Para({
 }) {
 	const name = node.name;
 	const children = sortChildren(node.children ?? []);
+	const context = useContext(NameAsciiContext);
 	const records = node.records ?? [];
 
-	const color = stringToColor(node.isZoneStart ? node.name : parentZone);
+	const color = domainNameToColor((node.isZoneStart ? node.name : parentZone) + context.colorSeed);
 
 	return (
-		<div style={{ paddingLeft: 20, backgroundColor: color }}>
-			<div style={{ fontWeight: node.isZoneStart ? "bold" : "normal" }}>
-				{name} {node.isZoneStart ? "(zone start)" : null}
-			</div>
+		<div
+			style={{
+				backgroundColor: color,
+				border: node.isZoneStart ? "1px solid black" : "none",
+				margin: node.isZoneStart ? "-1px" : "0	 ",
+				paddingLeft: 20,
+			}}
+		>
+			<div style={{ fontWeight: node.isZoneStart ? "bold" : "normal" }}>{name}</div>
 
-			<div>
-				{records.map((record, index) => (
-					<div key={index} style={{ paddingLeft: 20, color: "gray" }}>
-						{record.type} {record.value}
-					</div>
-				))}
-			</div>
+			{context.showRecords && (
+				<div>
+					{records.map((record, index) => (
+						<div
+							key={index}
+							style={{
+								paddingLeft: 20,
+								fontStyle: "italic",
+								fontSize: "0.8em",
+							}}
+						>
+							{record.type} {record.value}
+						</div>
+					))}
+				</div>
+			)}
 
 			{children.map((child) => (
-				<Para
+				<DomainNameNode
 					key={child.name}
 					node={child}
 					level={level + 1}

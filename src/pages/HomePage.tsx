@@ -1,6 +1,5 @@
 import { ServerView } from "../views/ServerView";
 import { NameAsciiView } from "../views/NameAsciiView";
-import { NameD3View } from "../views/NameD3View";
 
 export function HomePage() {
 	return (
@@ -14,7 +13,6 @@ export function HomePage() {
 					<ServerView />
 				</div>
 			</div>
-			<NameD3View />
 		</main>
 	);
 }
