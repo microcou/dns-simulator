@@ -2,10 +2,10 @@ import { createContext, useContext, useState } from "react";
 import { useNameStore } from "../store";
 import { generateId, unsafeHash } from "../utils";
 
-const NameAsciiContext = createContext({ showRecords: true, colorSeed: "" });
+const NameAsciiContext = createContext({ showRecords: true, showFullName: true, colorSeed: "" });
 
 const domainNameTree = {
-	name: ". (root)",
+	name: ".",
 	isZoneStart: true,
 	children: [
 		{ name: "com", isZoneStart: true },
@@ -94,6 +94,7 @@ export function NameAsciiView() {
 	const names = useNameStore((state) => state.names);
 
 	const [showRecords, setShowRecords] = useState(true);
+	const [showFullName, setShowFullName] = useState(true);
 	const [colorSeed, setColorSeed] = useState(() => generateId(8));
 
 	let level = 0;
@@ -105,7 +106,7 @@ export function NameAsciiView() {
 	);
 
 	return (
-		<NameAsciiContext.Provider value={{ showRecords, colorSeed }}>
+		<NameAsciiContext.Provider value={{ showRecords, showFullName, colorSeed }}>
 			<div>
 				<div style={{ display: "flex", gap: "1em", alignItems: "center", marginBottom: "0.5em" }}>
 					<label>
@@ -116,12 +117,20 @@ export function NameAsciiView() {
 						/>{" "}
 						Show records
 					</label>
+					<label>
+						<input
+							type="checkbox"
+							checked={showFullName}
+							onChange={(e) => setShowFullName(e.target.checked)}
+						/>{" "}
+						Show FQDN
+					</label>
 					<button type="button" onClick={() => setColorSeed(generateId(8))}>
 						Change colors
 					</button>
 				</div>
 				<div aria-label="Domain name tree" style={{ border: "1px solid black" }}>
-					<DomainNameNode level={level} node={tree} parentZone="" />
+					<DomainNameNode level={level} node={tree} parentZone="" parentDomainName="" />
 				</div>
 			</div>
 		</NameAsciiContext.Provider>
@@ -141,17 +150,25 @@ function DomainNameNode({
 	node,
 	level,
 	parentZone,
+	parentDomainName,
 }: {
 	node: DomainNameNode;
 	level: number;
 	parentZone: string;
+	parentDomainName: string;
 }) {
+	const context = useContext(NameAsciiContext);
 	const name = node.name;
 	const children = sortChildren(node.children ?? []);
-	const context = useContext(NameAsciiContext);
 	const records = node.records ?? [];
 
 	const color = domainNameToColor((node.isZoneStart ? node.name : parentZone) + context.colorSeed);
+
+	const fullName = !parentDomainName
+		? "."
+		: parentDomainName == "."
+			? name + "."
+			: name + "." + parentDomainName;
 
 	return (
 		<div
@@ -162,7 +179,9 @@ function DomainNameNode({
 				paddingLeft: 20,
 			}}
 		>
-			<div style={{ fontWeight: node.isZoneStart ? "bold" : "normal" }}>{name}</div>
+			<div style={{ fontWeight: node.isZoneStart ? "bold" : "normal" }}>
+				{context.showFullName ? fullName : name}
+			</div>
 
 			{context.showRecords && (
 				<div>
@@ -187,6 +206,7 @@ function DomainNameNode({
 					node={child}
 					level={level + 1}
 					parentZone={child.isZoneStart ? child.name : parentZone}
+					parentDomainName={fullName}
 				/>
 			))}
 		</div>
